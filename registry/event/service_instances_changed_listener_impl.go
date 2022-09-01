@@ -19,20 +19,15 @@ package event
 
 import (
 	"reflect"
-)
 
-import (
-	gxset "github.com/dubbogo/gost/container/set"
-	"github.com/dubbogo/gost/gof/observer"
-	"github.com/dubbogo/gost/log/logger"
-)
-
-import (
 	"dubbo.apache.org/dubbo-go/v3/common"
 	"dubbo.apache.org/dubbo-go/v3/common/constant"
 	"dubbo.apache.org/dubbo-go/v3/common/extension"
 	"dubbo.apache.org/dubbo-go/v3/registry"
 	"dubbo.apache.org/dubbo-go/v3/remoting"
+	gxset "github.com/dubbogo/gost/container/set"
+	"github.com/dubbogo/gost/gof/observer"
+	"github.com/dubbogo/gost/log/logger"
 )
 
 // ServiceInstancesChangedListenerImpl The Service Discovery Changed  Event Listener
@@ -130,12 +125,15 @@ func (lstn *ServiceInstancesChangedListenerImpl) OnEvent(e observer.Event) error
 
 		for key, notifyListener := range lstn.listeners {
 			urls := lstn.serviceUrls[key]
+			events := make([]*registry.ServiceEvent, len(urls))
 			for _, url := range urls {
-				notifyListener.Notify(&registry.ServiceEvent{
+				events = append(events, &registry.ServiceEvent{
 					Action:  remoting.EventTypeAdd,
 					Service: url,
 				})
+
 			}
+			notifyListener.NotifyAll(events, func() {})
 		}
 	}
 	return nil
